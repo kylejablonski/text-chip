@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="primary_color">#2196F3</color>
+    <color name="primary_dark_color">#1976D2</color>
+    <color name="accent_color">#FF5252</color>
+
+    <color name="primary_black">#E1000000</color>
+    <color name="secondary_black">#8B000000</color>
+    <color name="disabled_black">#58000000</color>
+
+    <color name="primary_white">#FFFFFFFF</color>
+    <color name="secondary_white">#B3FFFFFF</color>
+    <color name="disabled_white">#8CFFFFFF</color>
+
+</resources>

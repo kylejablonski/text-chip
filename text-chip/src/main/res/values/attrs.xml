@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Styleable attributes for the Text Chip -->
+    <declare-styleable name="TextChip">
+        <!-- Background color for the chip -->
+        <attr name="tc_backgroundColor" format="color"/>
+        <!-- Text for the Chip -->
+        <attr name="tc_text" format="string"/>
+        <!-- Color for the text in the chip -->
+        <attr name="tc_textColor" format="color"/>
+        <!-- Text size for the text in the chip -->
+        <attr name="tc_textSize" format="dimension"/>
+        <!-- Upper Case -->
+        <attr name="tc_upperCase" format="boolean"/>
+    </declare-styleable>
+</resources>
