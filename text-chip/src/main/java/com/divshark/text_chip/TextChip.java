@@ -21,8 +21,8 @@ public final class TextChip extends View {
     // Default values
     private static final String TEXT_CHIP = "Text Chip";
     private static final float HEIGHT = 32f;
-    private static final float PADDING = 12f;
-    private static final float DEFAULT_TEXT_SIZE = 14f;
+    private static final float PADDING = 6f;
+    private static final float DEFAULT_TEXT_SIZE = 13f;
     private static final float CHIP_CORNER_RADIUS = 2f;
 
     // Painters
@@ -31,7 +31,6 @@ public final class TextChip extends View {
 
     // Background RectF for the Chip
     private RectF mRoundedRect;
-
 
     // Styleable attributes
     private int mTextColor;
@@ -43,6 +42,7 @@ public final class TextChip extends View {
     private boolean mIsUpperCase = true;
 
     private float mCornerRadius;
+    private float mInternalPadding;
     private float mDefaultHeight;
 
     public TextChip(Context context, AttributeSet attrs) {
@@ -65,6 +65,7 @@ public final class TextChip extends View {
         this.mBackgroundColor = backgroundColor;
         mBackgroundPaint.setColor(backgroundColor);
         invalidate();
+        requestLayout();
     }
 
     public String getText() {
@@ -78,9 +79,9 @@ public final class TextChip extends View {
         }else{
             this.mText = text.trim();
         }
-
         computeBounds();
         invalidate();
+        requestLayout();
     }
 
     public int getTextColor() {
@@ -91,6 +92,7 @@ public final class TextChip extends View {
         this.mTextColor = textColor;
         mTextPaint.setColor(textColor);
         invalidate();
+        requestLayout();
     }
 
     public float getTextSize() {
@@ -99,12 +101,10 @@ public final class TextChip extends View {
 
     public void setTextSize(float textSize) {
         this.mTextSize = textSize;
-
         mTextPaint.setTextSize(textSize);
-        mCornerRadius = DeviceDimensionsHelper.convertDpToPixel(mTextSize / CHIP_CORNER_RADIUS, getContext());
-
         computeBounds();
         invalidate();
+        requestLayout();
     }
 
     public void setUpperCase(boolean isUpperCase){
@@ -117,6 +117,7 @@ public final class TextChip extends View {
         }
 
         invalidate();
+        requestLayout();
     }
 
     public boolean isUpperCase(){
@@ -125,29 +126,29 @@ public final class TextChip extends View {
 
     private void initDefaults(AttributeSet attrs){
 
-        if(attrs != null){
+        if(attrs != null) {
 
             TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.TextChip);
 
             mBackgroundColor = typedArray.getColor(R.styleable.TextChip_tc_backgroundColor, getResources().getColor(R.color.accent_color));
-            String text = typedArray.getString(R.styleable.TextChip_tc_text) != null ? typedArray.getString(R.styleable.TextChip_tc_text) : TEXT_CHIP;
             mTextColor = typedArray.getColor(R.styleable.TextChip_tc_textColor, getResources().getColor(R.color.primary_white));
             mTextSize = typedArray.getDimension(R.styleable.TextChip_tc_textSize, DeviceDimensionsHelper.convertDpToPixel(DEFAULT_TEXT_SIZE, getContext()));
             mIsUpperCase = typedArray.getBoolean(R.styleable.TextChip_tc_upperCase, true);
+            String text = typedArray.getString(R.styleable.TextChip_tc_text) != null ? typedArray.getString(R.styleable.TextChip_tc_text) : TEXT_CHIP;
 
-            if(mIsUpperCase){
+            if (mIsUpperCase) {
                 mText = text.toUpperCase();
-            }else{
+            } else {
                 mText = text;
             }
 
             typedArray.recycle();
-
-            mCornerRadius = DeviceDimensionsHelper.convertDpToPixel(mTextSize / CHIP_CORNER_RADIUS, getContext());
-
         }
 
         mDefaultHeight = DeviceDimensionsHelper.convertDpToPixel(HEIGHT, getContext());
+
+        // Compute the internal padding
+        mInternalPadding = DeviceDimensionsHelper.convertDpToPixel(2 * PADDING, getContext());
 
         initPainters();
 
@@ -173,13 +174,14 @@ public final class TextChip extends View {
         mTextHeight = mTextPaint.getTextSize() - (mTextPaint.ascent() + mTextPaint.descent());
         mTextWidth = mTextPaint.measureText(mText);
 
-        // Compute rect height as textHeight + (PADDING)
-        int rectPadding = (int) DeviceDimensionsHelper.convertDpToPixel(PADDING, getContext());
-        int rectHeight = (int) (mTextHeight + rectPadding);
+        // Compute the corner radius
+        mCornerRadius = DeviceDimensionsHelper.convertDpToPixel(mTextHeight / CHIP_CORNER_RADIUS, getContext());
 
-        // Compute rect width as textWidth + (PADDING)
+        int rectWidth = (int) (mTextWidth + (2f * mInternalPadding) ); // add double the padding for width
+        int rectHeight = (int) (mTextHeight + mInternalPadding);
 
-        Rect backgroundRect = new Rect(0, 0, (int) mTextWidth + (rectPadding), rectHeight);
+        // Compute rect width as textWidth + (rectPadding)
+        Rect backgroundRect = new Rect(0, 0, rectWidth, rectHeight);
 
         int paddingLeft = getPaddingLeft();
         int paddingRight = getPaddingRight();
@@ -197,26 +199,24 @@ public final class TextChip extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        int width = getWidth();
-        int height = getHeight();
+        int middleX = getWidth() / 2;
+        int middleY = getHeight() / 2;
 
-        int middleX = width / 2;
-        int middleY = height / 2;
+        Log.d(TAG, "half dimensions "+ middleX + " x "+ middleY);
 
         // Paint the chip background
+        // Rect, x radius, y radius, paint
         canvas.drawRoundRect(mRoundedRect, mCornerRadius, mCornerRadius, mBackgroundPaint);
 
+        Log.d(TAG, "rect "+ mRoundedRect.width() + " x "+ mRoundedRect.height());
+
         // Paint the text in the middle of the View
-        canvas.drawText(mText, middleX - (mTextPaint.measureText(mText) / 2) , middleY + (mTextPaint.getTextSize() / 2), mTextPaint);
-    }
+        // text, x, y, paint
+        float textX = middleX - (mTextWidth / 2f);
+        float textY = middleY + (mTextHeight / 4f);
 
-    @Override
-    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-        super.onSizeChanged(w, h, oldw, oldh);
-
-        computeBounds();
-
-        invalidate();
+        Log.d(TAG, "text position "+ textX + " x "+ textY);
+        canvas.drawText(mText, textX, textY, mTextPaint);
     }
 
     @Override
@@ -262,6 +262,8 @@ public final class TextChip extends View {
             //Be whatever you want
             height = desiredHeight;
         }
+
+        Log.d(TAG, "dimensions " + width + " x "+ height);
 
         setMeasuredDimension(width, height);
     }
