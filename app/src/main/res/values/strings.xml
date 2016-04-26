@@ -7,6 +7,7 @@
     <string name="text">Text</string>
     <string name="text_color">Text Color</string>
     <string name="text_size">Text Size</string>
+    <string name="text_caps">Capitalize</string>
 
     <string name="okay">Okay</string>
     <string name="cancel">Cancel</string>

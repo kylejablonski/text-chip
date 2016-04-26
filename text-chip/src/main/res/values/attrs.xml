@@ -12,5 +12,7 @@
         <attr name="tc_textSize" format="dimension"/>
         <!-- Upper Case -->
         <attr name="tc_upperCase" format="boolean"/>
+        <!-- Text Stroke Width -->
+        <attr name="tc_strokeWidth" format="dimension"/>
     </declare-styleable>
 </resources>
