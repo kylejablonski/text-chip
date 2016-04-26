@@ -3,11 +3,12 @@ package com.divshark.text_chip;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
@@ -16,14 +17,18 @@ import android.view.View;
  */
 public final class TextChip extends View {
 
+    // TAG for Logging
     private static final String TAG = TextChip.class.getSimpleName();
 
     // Default values
     private static final String TEXT_CHIP = "Text Chip";
     private static final float HEIGHT = 32f;
     private static final float PADDING = 6f;
-    private static final float DEFAULT_TEXT_SIZE = 13f;
+    private static final float DEFAULT_TEXT_SIZE = 26f;
     private static final float CHIP_CORNER_RADIUS = 2f;
+    private static final float DEFAULT_STROKE_WIDTH = 0.5f;
+
+    private static final String DEFAULT_BG_COLOR = "#EBEBEB";
 
     // Painters
     private Paint mTextPaint;
@@ -39,11 +44,20 @@ public final class TextChip extends View {
     private float mTextHeight;
     private float mTextWidth;
     private String mText;
+    private String mOriginalText;
     private boolean mIsUpperCase = true;
+    private float mStrokeWidth = 1.0f;
 
     private float mCornerRadius;
     private float mInternalPadding;
     private float mDefaultHeight;
+
+    private Drawable mForeGroundDrawable;
+
+    public TextChip(Context context, String text) {
+        super(context);
+        this.mText = text;
+    }
 
     public TextChip(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -73,11 +87,12 @@ public final class TextChip extends View {
     }
 
     public void setText(String text) {
+        this.mOriginalText = text;
 
         if(mIsUpperCase){
             this.mText = text.toUpperCase().trim();
         }else{
-            this.mText = text.trim();
+            this.mText = mOriginalText.trim();
         }
         computeBounds();
         invalidate();
@@ -111,11 +126,12 @@ public final class TextChip extends View {
         this.mIsUpperCase = isUpperCase;
 
         if(mIsUpperCase){
-            this.mText = mText.toUpperCase().trim();
+            this.mText = getText().toUpperCase().trim();
         }else{
-            this.mText = mText.trim();
+            this.mText = mOriginalText.trim();
         }
 
+        computeBounds();
         invalidate();
         requestLayout();
     }
@@ -124,17 +140,33 @@ public final class TextChip extends View {
         return mIsUpperCase;
     }
 
+
+    public float getStrokeWidth(){
+        return this.mStrokeWidth;
+    }
+
+    public void setStrokeWidth(float strokeWidth){
+        this.mStrokeWidth = strokeWidth;
+
+        mTextPaint.setStrokeWidth(mStrokeWidth);
+
+        computeBounds();
+        invalidate();
+        requestLayout();
+    }
+
     private void initDefaults(AttributeSet attrs){
 
         if(attrs != null) {
 
             TypedArray typedArray = getContext().obtainStyledAttributes(attrs, R.styleable.TextChip);
 
-            mBackgroundColor = typedArray.getColor(R.styleable.TextChip_tc_backgroundColor, getResources().getColor(R.color.accent_color));
-            mTextColor = typedArray.getColor(R.styleable.TextChip_tc_textColor, getResources().getColor(R.color.primary_white));
+            mBackgroundColor = typedArray.getColor(R.styleable.TextChip_tc_backgroundColor, Color.parseColor(DEFAULT_BG_COLOR));
+            mTextColor = typedArray.getColor(R.styleable.TextChip_tc_textColor, getResources().getColor(R.color.primary_black));
             mTextSize = typedArray.getDimension(R.styleable.TextChip_tc_textSize, DeviceDimensionsHelper.convertDpToPixel(DEFAULT_TEXT_SIZE, getContext()));
+            mStrokeWidth = typedArray.getDimension(R.styleable.TextChip_tc_strokeWidth, DeviceDimensionsHelper.convertDpToPixel(DEFAULT_STROKE_WIDTH, getContext()));
             mIsUpperCase = typedArray.getBoolean(R.styleable.TextChip_tc_upperCase, true);
-            String text = typedArray.getString(R.styleable.TextChip_tc_text) != null ? typedArray.getString(R.styleable.TextChip_tc_text) : TEXT_CHIP;
+            String text = typedArray.hasValue(R.styleable.TextChip_tc_text) ? typedArray.getString(R.styleable.TextChip_tc_text) : TEXT_CHIP;
 
             if (mIsUpperCase) {
                 mText = text.toUpperCase();
@@ -144,6 +176,9 @@ public final class TextChip extends View {
 
             typedArray.recycle();
         }
+
+        mForeGroundDrawable = getResources().getDrawable(R.drawable.chip_selector);
+        mForeGroundDrawable.setCallback(this);
 
         mDefaultHeight = DeviceDimensionsHelper.convertDpToPixel(HEIGHT, getContext());
 
@@ -161,7 +196,7 @@ public final class TextChip extends View {
         mTextPaint.setStyle(Paint.Style.FILL_AND_STROKE);
         mTextPaint.setColor(mTextColor);
         mTextPaint.setTextSize(mTextSize);
-        mTextPaint.setStrokeWidth(1.5f);
+        mTextPaint.setStrokeWidth(mStrokeWidth);
 
         mBackgroundPaint = new Paint();
         mBackgroundPaint.setStyle(Paint.Style.FILL_AND_STROKE);
@@ -177,8 +212,8 @@ public final class TextChip extends View {
         // Compute the corner radius
         mCornerRadius = DeviceDimensionsHelper.convertDpToPixel(mTextHeight / CHIP_CORNER_RADIUS, getContext());
 
-        int rectWidth = (int) (mTextWidth + (2f * mInternalPadding) ); // add double the padding for width
-        int rectHeight = (int) (mTextHeight + mInternalPadding);
+        int rectWidth = (int) (mTextWidth + (2f * mInternalPadding));
+        int rectHeight = (int) Math.max(mDefaultHeight, mTextHeight + mInternalPadding);
 
         // Compute rect width as textWidth + (rectPadding)
         Rect backgroundRect = new Rect(0, 0, rectWidth, rectHeight);
@@ -191,9 +226,9 @@ public final class TextChip extends View {
         mRoundedRect = new RectF(backgroundRect.left + paddingLeft, backgroundRect.top + paddingTop,
                 backgroundRect.right + paddingRight, backgroundRect.bottom + paddingBottom);
 
-        Log.d(TAG, mRoundedRect.toString());
-    }
 
+
+    }
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -202,21 +237,17 @@ public final class TextChip extends View {
         int middleX = getWidth() / 2;
         int middleY = getHeight() / 2;
 
-        Log.d(TAG, "half dimensions "+ middleX + " x "+ middleY);
-
         // Paint the chip background
         // Rect, x radius, y radius, paint
         canvas.drawRoundRect(mRoundedRect, mCornerRadius, mCornerRadius, mBackgroundPaint);
-
-        Log.d(TAG, "rect "+ mRoundedRect.width() + " x "+ mRoundedRect.height());
 
         // Paint the text in the middle of the View
         // text, x, y, paint
         float textX = middleX - (mTextWidth / 2f);
         float textY = middleY + (mTextHeight / 4f);
-
-        Log.d(TAG, "text position "+ textX + " x "+ textY);
         canvas.drawText(mText, textX, textY, mTextPaint);
+
+        mForeGroundDrawable.draw(canvas);
     }
 
     @Override
@@ -262,9 +293,29 @@ public final class TextChip extends View {
             //Be whatever you want
             height = desiredHeight;
         }
-
-        Log.d(TAG, "dimensions " + width + " x "+ height);
-
         setMeasuredDimension(width, height);
+    }
+
+    @Override
+    protected void drawableStateChanged() {
+        super.drawableStateChanged();
+        mForeGroundDrawable.setState(getDrawableState());
+
+        invalidate();
+    }
+
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        mForeGroundDrawable.setBounds((int) mRoundedRect.left,(int) mRoundedRect.top,(int) mRoundedRect.right,(int) mRoundedRect.bottom);
+    }
+
+    @SuppressWarnings("NewApi")
+    @Override
+    public void drawableHotspotChanged(float x, float y) {
+        super.drawableHotspotChanged(x, y);
+        if(mForeGroundDrawable != null){
+            mForeGroundDrawable.setHotspot(x,y);
+        }
     }
 }

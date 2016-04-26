@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatSpinner;
 import android.text.Editable;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
@@ -44,6 +46,7 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatSpinner mSpOptions;
     private AppCompatSpinner mSpTextColor;
     private FrameLayout mFlBackgroundColor;
+    private AppCompatCheckBox mCbTextCaps;
     private SharedPreferences mSharedPreferences;
 
     private static final String PREFS = "prefs";
@@ -52,11 +55,13 @@ public class MainActivity extends AppCompatActivity {
     private static final String TEXT_COLOR = "text_color";
     private static final String TEXT_SIZE = "text_size";
     private static final String BG_COLOR =  "bg_color";
+    private static final String TEXT_CAPS =  "cap_text";
 
     private String textColor;
     private String textSize;
     private int bgColor;
     private String text;
+    private boolean textCaps;
 
     // --------------------------------------------------------------------------------------------
     // Class overrides
@@ -73,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
         mSpOptions = (AppCompatSpinner) findViewById(R.id.sp_text_size);
         mSpTextColor = (AppCompatSpinner) findViewById(R.id.sp_text_color);
         mFlBackgroundColor = (FrameLayout) findViewById(R.id.fl_bg_color);
+        mCbTextCaps = (AppCompatCheckBox) findViewById(R.id.cb_text_caps);
 
 
         // Setup from preferences
@@ -80,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         textColor = mSharedPreferences.getString(TEXT_COLOR, "White");
         textSize = mSharedPreferences.getString(TEXT_SIZE, "14");
         bgColor = mSharedPreferences.getInt(BG_COLOR, Color.parseColor("#2196F3"));
+        textCaps = mSharedPreferences.getBoolean(TEXT_CAPS, false);
 
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, android.R.layout.simple_list_item_1, TEXT_SIZES);
@@ -94,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
         mChip.setOnClickListener(ChipListener);
         mEtText.addTextChangedListener(ChipTextWatcher);
-
+        mCbTextCaps.setOnCheckedChangeListener(CbListener);
 
         mFlBackgroundColor.setOnClickListener(BgColorListener);
     }
@@ -107,6 +114,8 @@ public class MainActivity extends AppCompatActivity {
         mChip.setText(text);
         mChip.setTextSize(Integer.parseInt(textSize) * 2);
         mChip.setBackgroundColor(bgColor);
+        mChip.setUpperCase(textCaps);
+        mCbTextCaps.setChecked(textCaps);
 
         mFlBackgroundColor.setBackgroundColor(bgColor);
 
@@ -217,6 +226,16 @@ public class MainActivity extends AppCompatActivity {
             Dialog dialog = builder.create();
             dialog.show();
 
+
+        }
+    };
+
+    private final CompoundButton.OnCheckedChangeListener CbListener = new CompoundButton.OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+            mSharedPreferences.edit().putBoolean(TEXT_CAPS, isChecked).apply();
+            mChip.setUpperCase(isChecked);
+            Log.d(TAG, "to upper case "+ isChecked);
 
         }
     };

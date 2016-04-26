@@ -9,7 +9,6 @@
     <com.divshark.text_chip.TextChip
         android:id="@+id/text_chip"
         android:layout_centerHorizontal="true"
-        android:foreground="?selectableItemBackground"
         android:padding="@dimen/activity_horizontal_margin"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
@@ -45,6 +44,21 @@
 
         <RelativeLayout
             android:layout_below="@+id/rl_text"
+            android:id="@+id/rl_text_caps"
+            android:layout_width="match_parent"
+            android:layout_height="?listPreferredItemHeight">
+
+            <android.support.v7.widget.AppCompatCheckBox
+                android:id="@+id/cb_text_caps"
+                android:text="@string/text_caps"
+                android:layout_centerVertical="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_below="@+id/rl_text_caps"
             android:id="@+id/rl_text_color"
             android:layout_width="match_parent"
             android:layout_height="?listPreferredItemHeight">
