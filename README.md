@@ -9,8 +9,8 @@ Get the sample app:
 
 Screenshots:
 
-<img src="https://github.com/kylejablonski/text-chip/blob/master/app/art/text-chip-sample.png" style="display:inline-block" width="360" height="640"/>
-<img src="https://github.com/kylejablonski/text-chip/blob/master/app/art/text-chip-2.png" style="display:inline-block" width="360" height="640"/>
+<img src="https://github.com/kylejablonski/text-chip/blob/master/art/text-chip-sample.png" style="display:inline-block" width="360" height="640"/>
+<img src="https://github.com/kylejablonski/text-chip/blob/master/art/text-chip-2.png" style="display:inline-block" width="360" height="640"/>
 
 Add it in your root build.gradle at the end of repositories:
 
